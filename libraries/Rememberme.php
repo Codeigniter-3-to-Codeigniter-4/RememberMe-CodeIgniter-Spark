@@ -11,12 +11,6 @@
  */
 
 class Rememberme {
-
-	private $CI;
-	
-	function __construct() {
-		$this->CI =& get_instance();
-	}
 	
 	function setCookie($netid = "", $nocookie = false) {
 		if (!$netid && !$nocookie) {
@@ -24,16 +18,18 @@ class Rememberme {
 			return;
 		}
 		
-		session_start();		
+		session_start();
+		
+		$query = db_connect()->table('ci_cookies');
 		// delete any existing table entries belonging to user
-		$nocookie ? $this->CI->db->where('php_session_id', session_id()) : 
-					$this->CI->db->where('netid', $netid);
-		$this->CI->db->delete('ci_cookies');
+		$query .= $nocookie ? $query->where('php_session_id', session_id()) : 
+					$query->where('netid', $netid);
+		$query->delete();
 		
 		if ($nocookie) {
 			// record landing page
 			$cookie_id = "";
-			$orig_page_requested = $this->CI->uri->uri_string();
+			$orig_page_requested = uri_string();
 		}
 		else {
 			$cookie_id = uniqid('', true);
